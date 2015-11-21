@@ -96,7 +96,38 @@ namespace DcsBios {
 				dirty_ = false;
 			}
 	};
-	
+
+	class FloatBuffer : ExportStreamListener {
+		private:
+			void onDcsBiosWrite(unsigned int address, unsigned int value) {
+				if(address == address_) {
+					data = limit_ + (((float)((value & mask_) >> shift_) / precision_) * interval_);
+				}
+			}
+			unsigned int address_;
+			unsigned int mask_;
+			unsigned char shift_;
+			bool dirty_;
+			float interval_, limit_;
+			float precision_ = 65535.0;
+		public:
+			float data;
+			FloatBuffer(unsigned int address, unsigned int mask, unsigned char shift, float limit1, float limit2, bool bit8 = false) {
+				dirty_ = false;
+				address_ = address;
+				mask_ = mask;
+				shift_ = shift;
+				interval_ = limit2 - limit1;
+				limit_ = limit1;
+				if(bit8) precision_ = 255;
+			}
+			bool isDirty() {
+				return dirty_;
+			}
+			void clearDirty() {
+				dirty_ = false;
+			}
+	};
 }
 
 #endif
